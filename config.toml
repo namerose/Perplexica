@@ -1,0 +1,32 @@
+[GENERAL]
+SIMILARITY_MEASURE = "cosine"
+KEEP_ALIVE = "5m"
+
+[MODELS.OPENAI]
+API_KEY = ""
+
+[MODELS.GROQ]
+API_KEY = ""
+
+[MODELS.ANTHROPIC]
+API_KEY = ""
+
+[MODELS.GEMINI]
+API_KEY = ""
+
+[MODELS.CUSTOM_OPENAI]
+API_KEY = ""
+API_URL = ""
+MODEL_NAME = ""
+
+[MODELS.OLLAMA]
+API_URL = ""
+
+[MODELS.FAL_AI]
+API_KEY = ""
+
+[MODELS.TAVILY]
+API_KEY = ""
+
+[API_ENDPOINTS]
+SEARXNG = "http://185.247.206.160:8080" #i gave free for testing, 3 month left
