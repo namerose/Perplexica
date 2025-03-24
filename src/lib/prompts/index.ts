@@ -2,6 +2,7 @@ import {
   academicSearchResponsePrompt,
   academicSearchRetrieverPrompt,
 } from './academicSearch';
+import { codeAssistantPrompt } from './codeAssistant';
 import {
   redditSearchResponsePrompt,
   redditSearchRetrieverPrompt,
@@ -27,6 +28,7 @@ export default {
   wolframAlphaSearchResponsePrompt,
   wolframAlphaSearchRetrieverPrompt,
   writingAssistantPrompt,
+  codeAssistantPrompt,
   youtubeSearchResponsePrompt,
   youtubeSearchRetrieverPrompt,
 };

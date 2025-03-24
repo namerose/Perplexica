@@ -1,6 +1,7 @@
 import {
   BadgePercent,
   ChevronDown,
+  Code,
   Globe,
   Pencil,
   ScanEye,
@@ -19,9 +20,21 @@ import { Fragment } from 'react';
 const focusModes = [
   {
     key: 'webSearch',
-    title: 'All',
-    description: 'Searches across all of the internet',
+    title: 'SearxNG',
+    description: 'Search the internet using SearxNG',
     icon: <Globe size={20} />,
+  },
+  {
+    key: 'webSearchTavily',
+    title: 'Tavily',
+    description: 'Search the internet using Tavily API',
+    icon: <Globe size={20} className="text-blue-500" />,
+  },
+  {
+    key: 'webSearchBoth',
+    title: 'Combined',
+    description: 'Search using both SearxNG and Tavily',
+    icon: <Globe size={20} className="text-purple-500" />,
   },
   {
     key: 'academicSearch',
@@ -34,6 +47,12 @@ const focusModes = [
     title: 'Writing',
     description: 'Chat without searching the web',
     icon: <Pencil size={16} />,
+  },
+  {
+    key: 'codeAssistant',
+    title: 'Code',
+    description: 'Help with coding and development tasks',
+    icon: <Code size={20} />,
   },
   {
     key: 'wolframAlphaSearch',
@@ -63,24 +82,31 @@ const Focus = ({
   setFocusMode: (mode: string) => void;
 }) => {
   return (
-    <Popover className="relative w-full max-w-[15rem] md:max-w-md lg:max-w-lg mt-[6.5px]">
+    <Popover className="relative w-full max-w-[15rem] md:max-w-md lg:max-w-lg">
       <PopoverButton
         type="button"
-        className=" text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-95 transition duration-200 hover:text-black dark:hover:text-white"
+        className={cn(
+          "flex items-center justify-center gap-2 p-2 h-9 w-9 sm:w-auto sm:px-4",
+          "rounded-full transition-all duration-300 overflow-hidden",
+          "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+          "hover:shadow-md text-sm",
+          focusMode !== 'webSearch'
+            ? "bg-gray-100 dark:bg-[#f5f5f5] text-gray-700 dark:text-[#313335]"
+            : "bg-white dark:bg-[#313335] text-[#313335] dark:text-white",
+        )}
       >
         {focusMode !== 'webSearch' ? (
-          <div className="flex flex-row items-center space-x-1">
+          <>
             {focusModes.find((mode) => mode.key === focusMode)?.icon}
-            <p className="text-xs font-medium hidden lg:block">
+            <span className="hidden sm:block text-xs font-medium">
               {focusModes.find((mode) => mode.key === focusMode)?.title}
-            </p>
-            <ChevronDown size={20} className="-translate-x-1" />
-          </div>
+            </span>
+          </>
         ) : (
-          <div className="flex flex-row items-center space-x-1">
-            <ScanEye size={20} />
-            <p className="text-xs font-medium hidden lg:block">Focus</p>
-          </div>
+          <>
+            <ScanEye className="h-3.5 w-3.5" />
+            <span className="hidden sm:block text-xs font-medium">Focus</span>
+          </>
         )}
       </PopoverButton>
       <Transition

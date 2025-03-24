@@ -18,6 +18,7 @@ interface ImageSearchBody {
   query: string;
   chatHistory: any[];
   chatModel?: ChatModel;
+  focusMode?: string;
 }
 
 export const POST = async (req: Request) => {
@@ -64,12 +65,24 @@ export const POST = async (req: Request) => {
       return Response.json({ error: 'Invalid chat model' }, { status: 400 });
     }
 
+    // Determine search engine based on focus mode
+    let searchEngine: 'searxng' | 'tavily' | 'both' = 'searxng';
+    
+    if (body.focusMode === 'webSearchTavily') {
+      searchEngine = 'tavily';
+    } else if (body.focusMode === 'webSearchBoth') {
+      searchEngine = 'both';
+    }
+    
+    console.log(`Image search using engine: ${searchEngine} for query: "${body.query}"`);
+    
     const images = await handleImageSearch(
       {
         chat_history: chatHistory,
         query: body.query,
       },
       llm,
+      searchEngine
     );
 
     return Response.json({ images }, { status: 200 });

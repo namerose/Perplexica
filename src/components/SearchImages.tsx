@@ -38,6 +38,7 @@ const SearchImages = ({
 
             const customOpenAIBaseURL = localStorage.getItem('openAIBaseURL');
             const customOpenAIKey = localStorage.getItem('openAIApiKey');
+            const focusMode = localStorage.getItem('focusMode') || 'webSearch';
 
             const res = await fetch(`/api/images`, {
               method: 'POST',
@@ -47,6 +48,7 @@ const SearchImages = ({
               body: JSON.stringify({
                 query: query,
                 chatHistory: chatHistory,
+                focusMode: focusMode,
                 chatModel: {
                   provider: chatModelProvider,
                   model: chatModel,

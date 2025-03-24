@@ -30,6 +30,12 @@ interface Config {
       API_KEY: string;
       MODEL_NAME: string;
     };
+    FAL_AI: {
+      API_KEY: string;
+    };
+    TAVILY: {
+      API_KEY: string;
+    };
   };
   API_ENDPOINTS: {
     SEARXNG: string;
@@ -71,6 +77,11 @@ export const getCustomOpenaiApiUrl = () =>
 
 export const getCustomOpenaiModelName = () =>
   loadConfig().MODELS.CUSTOM_OPENAI.MODEL_NAME;
+
+export const getFalAiApiKey = () => loadConfig().MODELS.FAL_AI.API_KEY;
+
+export const getTavilyApiKey = () => 
+  process.env.TAVILY_API_KEY || loadConfig().MODELS.TAVILY.API_KEY;
 
 const mergeConfigs = (current: any, update: any): any => {
   if (update === null || update === undefined) {

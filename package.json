@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@fal-ai/client": "^1.3.0",
     "@headlessui/react": "^2.2.0",
     "@iarna/toml": "^2.2.5",
     "@icons-pack/react-simple-icons": "^12.3.0",

@@ -10,6 +10,27 @@ export const searchHandlers: Record<string, MetaSearchAgent> = {
     rerankThreshold: 0.3,
     searchWeb: true,
     summarizer: true,
+    searchEngine: 'searxng'
+  }),
+  webSearchTavily: new MetaSearchAgent({
+    activeEngines: [],
+    queryGeneratorPrompt: prompts.webSearchRetrieverPrompt,
+    responsePrompt: prompts.webSearchResponsePrompt,
+    rerank: true,
+    rerankThreshold: 0.3,
+    searchWeb: true,
+    summarizer: true,
+    searchEngine: 'tavily'
+  }),
+  webSearchBoth: new MetaSearchAgent({
+    activeEngines: [],
+    queryGeneratorPrompt: prompts.webSearchRetrieverPrompt,
+    responsePrompt: prompts.webSearchResponsePrompt,
+    rerank: true,
+    rerankThreshold: 0.3,
+    searchWeb: true,
+    summarizer: true,
+    searchEngine: 'both'
   }),
   academicSearch: new MetaSearchAgent({
     activeEngines: ['arxiv', 'google scholar', 'pubmed'],
@@ -19,11 +40,21 @@ export const searchHandlers: Record<string, MetaSearchAgent> = {
     rerankThreshold: 0,
     searchWeb: true,
     summarizer: false,
+    searchEngine: 'searxng'
   }),
   writingAssistant: new MetaSearchAgent({
     activeEngines: [],
     queryGeneratorPrompt: '',
     responsePrompt: prompts.writingAssistantPrompt,
+    rerank: true,
+    rerankThreshold: 0,
+    searchWeb: false,
+    summarizer: false,
+  }),
+  codeAssistant: new MetaSearchAgent({
+    activeEngines: [],
+    queryGeneratorPrompt: '',
+    responsePrompt: prompts.codeAssistantPrompt,
     rerank: true,
     rerankThreshold: 0,
     searchWeb: false,
@@ -37,6 +68,7 @@ export const searchHandlers: Record<string, MetaSearchAgent> = {
     rerankThreshold: 0,
     searchWeb: true,
     summarizer: false,
+    searchEngine: 'searxng'
   }),
   youtubeSearch: new MetaSearchAgent({
     activeEngines: ['youtube'],
@@ -46,6 +78,7 @@ export const searchHandlers: Record<string, MetaSearchAgent> = {
     rerankThreshold: 0.3,
     searchWeb: true,
     summarizer: false,
+    searchEngine: 'searxng'
   }),
   redditSearch: new MetaSearchAgent({
     activeEngines: ['reddit'],
@@ -55,5 +88,6 @@ export const searchHandlers: Record<string, MetaSearchAgent> = {
     rerankThreshold: 0.3,
     searchWeb: true,
     summarizer: false,
+    searchEngine: 'searxng'
   }),
 };

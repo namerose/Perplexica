@@ -8,6 +8,7 @@ import formatChatHistoryAsString from '../utils/formatHistory';
 import { BaseMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { searchSearxng } from '../searxng';
+import { searchTavily } from '../tavily';
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 
 const imageSearchChainPrompt = `
@@ -81,11 +82,106 @@ const createImageSearchChain = (llm: BaseChatModel) => {
   ]);
 };
 
+// Function to search images using Tavily
+const searchImagesWithTavily = async (query: string): Promise<ImageSearchResult[]> => {
+  try {
+    const tavilyResults = await searchTavily(query, {
+      includeImages: true,
+      maxResults: 15  // Request more results to ensure we get enough images
+    });
+    
+    const images: ImageSearchResult[] = [];
+    
+    tavilyResults.results.forEach((result) => {
+      if (result.img_src && result.url && result.title) {
+        images.push({
+          img_src: result.img_src,
+          url: result.url,
+          title: result.title,
+        });
+      }
+    });
+    
+    return images.slice(0, 10);
+  } catch (error) {
+    console.error('Error searching images with Tavily:', error);
+    return [];
+  }
+};
+
+// Create a chain that uses either SearxNG or Tavily based on the searchEngine parameter
+const createImageSearchChainWithEngine = (llm: BaseChatModel, searchEngine: 'searxng' | 'tavily' | 'both' = 'searxng') => {
+  return RunnableSequence.from([
+    RunnableMap.from({
+      chat_history: (input: ImageSearchChainInput) => {
+        return formatChatHistoryAsString(input.chat_history);
+      },
+      query: (input: ImageSearchChainInput) => {
+        return input.query;
+      },
+    }),
+    PromptTemplate.fromTemplate(imageSearchChainPrompt),
+    llm,
+    strParser,
+    RunnableLambda.from(async (input: string) => {
+      input = input.replace(/<think>.*?<\/think>/g, '');
+      
+      let images: ImageSearchResult[] = [];
+      
+      if (searchEngine === 'searxng' || searchEngine === 'both') {
+        const searxResults = await searchSearxng(input, {
+          engines: ['bing images', 'google images'],
+        });
+        
+        searxResults.results.forEach((result) => {
+          if (result.img_src && result.url && result.title) {
+            images.push({
+              img_src: result.img_src,
+              url: result.url,
+              title: result.title,
+            });
+          }
+        });
+      }
+      
+      if (searchEngine === 'tavily' || searchEngine === 'both') {
+        const tavilyImages = await searchImagesWithTavily(input);
+        
+        // Merge unique images (avoid duplicates by URL)
+        const existingUrls = new Set(images.map(img => img.url));
+        tavilyImages.forEach(img => {
+          if (!existingUrls.has(img.url)) {
+            images.push(img);
+            existingUrls.add(img.url);
+          }
+        });
+      }
+      
+      return images.slice(0, 10);
+    }),
+  ]);
+};
+
 const handleImageSearch = (
   input: ImageSearchChainInput,
   llm: BaseChatModel,
+  searchEngine?: 'searxng' | 'tavily' | 'both'
 ) => {
-  const imageSearchChain = createImageSearchChain(llm);
+  // Default to searxng if not specified
+  const engine = searchEngine || 'searxng';
+  
+  // Get the active search engine from localStorage if in browser environment
+  let activeEngine = engine;
+  if (typeof window !== 'undefined') {
+    const focusMode = localStorage.getItem('focusMode');
+    if (focusMode === 'webSearchTavily') {
+      activeEngine = 'tavily';
+    } else if (focusMode === 'webSearchBoth') {
+      activeEngine = 'both';
+    }
+  }
+  
+  const imageSearchChain = createImageSearchChainWithEngine(llm, activeEngine);
   return imageSearchChain.invoke(input);
 };
 

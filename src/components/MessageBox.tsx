@@ -34,6 +34,7 @@ const MessageBox = ({
   isLast,
   rewrite,
   sendMessage,
+  focusMode,
 }: {
   message: Message;
   messageIndex: number;
@@ -43,9 +44,13 @@ const MessageBox = ({
   isLast: boolean;
   rewrite: (messageId: string) => void;
   sendMessage: (message: string) => void;
+  focusMode: string;
 }) => {
   const [parsedMessage, setParsedMessage] = useState(message.content);
   const [speechMessage, setSpeechMessage] = useState(message.content);
+
+  // Directly check if we're in writing assistant mode based on the focusMode prop
+  const isWritingMode = focusMode === 'writingAssistant';
 
   useEffect(() => {
     const regex = /\[(\d+)\]/g;
@@ -59,12 +64,15 @@ const MessageBox = ({
         processedMessage += '</think> <a> </a>'; // The extra <a> </a> is to prevent the the think component from looking bad
       }
     }
-
+    
+    // Only apply citation formatting if not in writing mode
     if (
       message.role === 'assistant' &&
       message?.sources &&
-      message.sources.length > 0
+      message.sources.length > 0 &&
+      !isWritingMode
     ) {
+      // Apply citation formatting for non-writing modes
       setParsedMessage(
         processedMessage.replace(
           regex,
@@ -74,6 +82,12 @@ const MessageBox = ({
             }" target="_blank" className="bg-light-secondary dark:bg-dark-secondary px-1 rounded ml-1 no-underline text-xs text-black/70 dark:text-white/70 relative">${number}</a>`,
         ),
       );
+      return;
+    } else if (message.role === 'assistant' && isWritingMode) {
+      // For writing mode, strip out citation numbers entirely
+      const cleanedMessage = processedMessage.replace(regex, '');
+      setSpeechMessage(cleanedMessage);
+      setParsedMessage(cleanedMessage);
       return;
     }
 
@@ -111,7 +125,10 @@ const MessageBox = ({
         <div className="flex flex-col space-y-9 lg:space-y-0 lg:flex-row lg:justify-between lg:space-x-9">
           <div
             ref={dividerRef}
-            className="flex flex-col space-y-6 w-full lg:w-9/12"
+            className={cn(
+              "flex flex-col space-y-6",
+              isWritingMode ? "w-full" : "w-full lg:w-9/12"
+            )}
           >
             {message.sources && message.sources.length > 0 && (
               <div className="flex flex-col space-y-2">
@@ -217,18 +234,20 @@ const MessageBox = ({
                 )}
             </div>
           </div>
-          <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">
-            <SearchImages
-              query={history[messageIndex - 1].content}
-              chatHistory={history.slice(0, messageIndex - 1)}
-              messageId={message.messageId}
-            />
-            <SearchVideos
-              chatHistory={history.slice(0, messageIndex - 1)}
-              query={history[messageIndex - 1].content}
-              messageId={message.messageId}
-            />
-          </div>
+          {!isWritingMode && (
+            <div className="lg:sticky lg:top-20 flex flex-col items-center space-y-3 w-full lg:w-3/12 z-30 h-full pb-4">
+              <SearchImages
+                query={history[messageIndex - 1].content}
+                chatHistory={history.slice(0, messageIndex - 1)}
+                messageId={message.messageId}
+              />
+              <SearchVideos
+                chatHistory={history.slice(0, messageIndex - 1)}
+                query={history[messageIndex - 1].content}
+                messageId={message.messageId}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -5,7 +5,7 @@ import {
   PopoverPanel,
   Transition,
 } from '@headlessui/react';
-import { CopyPlus, File, LoaderCircle, Plus, Trash } from 'lucide-react';
+import { Paperclip, File, LoaderCircle, Plus, Trash } from 'lucide-react';
 import { Fragment, useRef, useState } from 'react';
 import { File as FileType } from '../ChatWindow';
 
@@ -52,16 +52,27 @@ const AttachSmall = ({
   };
 
   return loading ? (
-    <div className="flex flex-row items-center justify-between space-x-1 p-1">
-      <LoaderCircle size={20} className="text-sky-400 animate-spin" />
+    <div className={cn(
+      "flex items-center justify-center p-2 h-9 w-9",
+      "rounded-full transition-all duration-300 overflow-hidden",
+      "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+      "bg-white dark:bg-[#313335]",
+    )}>
+      <LoaderCircle className="h-5 w-5 text-sky-400 animate-spin" />
     </div>
   ) : files.length > 0 ? (
     <Popover className="max-w-[15rem] md:max-w-md lg:max-w-lg">
       <PopoverButton
         type="button"
-        className="flex flex-row items-center justify-between space-x-1 p-1 text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-95 transition duration-200 hover:text-black dark:hover:text-white"
+        className={cn(
+          "flex items-center justify-center p-2 h-9 w-9",
+          "rounded-full transition-all duration-300 overflow-hidden",
+          "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+          "hover:shadow-md",
+          "bg-gray-100 dark:bg-[#f5f5f5] text-gray-700 dark:text-[#313335]",
+        )}
       >
-        <File size={20} className="text-sky-400" />
+        <File className="h-5 w-5 text-sky-400" />
       </PopoverButton>
       <Transition
         as={Fragment}
@@ -135,7 +146,13 @@ const AttachSmall = ({
     <button
       type="button"
       onClick={() => fileInputRef.current.click()}
-      className="flex flex-row items-center space-x-1 text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-200 hover:text-black dark:hover:text-white p-1"
+      className={cn(
+        "flex items-center justify-center p-2 h-9 w-9",
+        "rounded-full transition-all duration-300 overflow-hidden",
+        "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+        "hover:shadow-md",
+        "bg-white dark:bg-[#313335] text-[#313335] dark:text-white",
+      )}
     >
       <input
         type="file"
@@ -145,7 +162,7 @@ const AttachSmall = ({
         multiple
         hidden
       />
-      <CopyPlus size={20} />
+      <Paperclip className="h-5 w-5" />
     </button>
   );
 };

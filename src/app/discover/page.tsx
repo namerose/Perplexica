@@ -1,6 +1,6 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Globe, Home, Compass } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -13,7 +13,8 @@ interface Discover {
 }
 
 const Page = () => {
-  const [discover, setDiscover] = useState<Discover[] | null>(null);
+  const [indonesianNews, setIndonesianNews] = useState<Discover[] | null>(null);
+  const [internationalNews, setInternationalNews] = useState<Discover[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +33,12 @@ const Page = () => {
           throw new Error(data.message);
         }
 
-        data.blogs = data.blogs.filter((blog: Discover) => blog.thumbnail);
+        // Filter out items without thumbnails
+        const filteredIndonesianNews = data.indonesian?.filter((blog: Discover) => blog.thumbnail) || [];
+        const filteredInternationalNews = data.international?.filter((blog: Discover) => blog.thumbnail) || [];
 
-        setDiscover(data.blogs);
+        setIndonesianNews(filteredIndonesianNews);
+        setInternationalNews(filteredInternationalNews);
       } catch (err: any) {
         console.error('Error fetching data:', err.message);
         toast.error('Error fetching data');
@@ -70,40 +74,90 @@ const Page = () => {
       <div>
         <div className="flex flex-col pt-4">
           <div className="flex items-center">
-            <Search />
+            <Compass />
             <h1 className="text-3xl font-medium p-2">Discover</h1>
           </div>
           <hr className="border-t border-[#2B2C2C] my-4 w-full" />
         </div>
 
-        <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 pb-28 lg:pb-8 w-full justify-items-center lg:justify-items-start">
-          {discover &&
-            discover?.map((item, i) => (
-              <Link
-                href={`/?q=Summary: ${item.url}`}
-                key={i}
-                className="max-w-sm rounded-lg overflow-hidden bg-light-secondary dark:bg-dark-secondary hover:-translate-y-[1px] transition duration-200"
-                target="_blank"
-              >
-                <img
-                  className="object-cover w-full aspect-video"
-                  src={
-                    new URL(item.thumbnail).origin +
-                    new URL(item.thumbnail).pathname +
-                    `?id=${new URL(item.thumbnail).searchParams.get('id')}`
-                  }
-                  alt={item.title}
-                />
-                <div className="px-6 py-4">
-                  <div className="font-bold text-lg mb-2">
-                    {item.title.slice(0, 100)}...
+        {/* Indonesian News Section */}
+        <div className="mt-6">
+          <div className="flex items-center mb-4">
+            <Home className="mr-2" />
+            <h2 className="text-2xl font-medium">Indonesian News</h2>
+          </div>
+          <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 pb-12 w-full justify-items-center lg:justify-items-start">
+            {indonesianNews && indonesianNews.length > 0 ? (
+              indonesianNews.map((item, i) => (
+                <Link
+                  href={`/?q=Summary: ${item.url}`}
+                  key={`id-${i}`}
+                  className="max-w-sm rounded-lg overflow-hidden bg-light-secondary dark:bg-dark-secondary hover:-translate-y-[1px] transition duration-200"
+                  target="_blank"
+                >
+                  <img
+                    className="object-cover w-full aspect-video"
+                    src={
+                      new URL(item.thumbnail).origin +
+                      new URL(item.thumbnail).pathname +
+                      `?id=${new URL(item.thumbnail).searchParams.get('id')}`
+                    }
+                    alt={item.title}
+                  />
+                  <div className="px-6 py-4">
+                    <div className="font-bold text-lg mb-2">
+                      {item.title.slice(0, 100)}...
+                    </div>
+                    <p className="text-black-70 dark:text-white/70 text-sm">
+                      {item.content.slice(0, 100)}...
+                    </p>
                   </div>
-                  <p className="text-black-70 dark:text-white/70 text-sm">
-                    {item.content.slice(0, 100)}...
-                  </p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">No Indonesian news available</p>
+            )}
+          </div>
+        </div>
+
+        {/* International News Section */}
+        <div className="mt-6">
+          <div className="flex items-center mb-4">
+            <Globe className="mr-2" />
+            <h2 className="text-2xl font-medium">International News</h2>
+          </div>
+          <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4 pb-28 lg:pb-8 w-full justify-items-center lg:justify-items-start">
+            {internationalNews && internationalNews.length > 0 ? (
+              internationalNews.map((item, i) => (
+                <Link
+                  href={`/?q=Summary: ${item.url}`}
+                  key={`intl-${i}`}
+                  className="max-w-sm rounded-lg overflow-hidden bg-light-secondary dark:bg-dark-secondary hover:-translate-y-[1px] transition duration-200"
+                  target="_blank"
+                >
+                  <img
+                    className="object-cover w-full aspect-video"
+                    src={
+                      new URL(item.thumbnail).origin +
+                      new URL(item.thumbnail).pathname +
+                      `?id=${new URL(item.thumbnail).searchParams.get('id')}`
+                    }
+                    alt={item.title}
+                  />
+                  <div className="px-6 py-4">
+                    <div className="font-bold text-lg mb-2">
+                      {item.title.slice(0, 100)}...
+                    </div>
+                    <p className="text-black-70 dark:text-white/70 text-sm">
+                      {item.content.slice(0, 100)}...
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">No international news available</p>
+            )}
+          </div>
         </div>
       </div>
     </>

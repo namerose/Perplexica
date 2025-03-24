@@ -45,21 +45,20 @@ const Optimization = ({
     <Popover className="relative w-full max-w-[15rem] md:max-w-md lg:max-w-lg">
       <PopoverButton
         type="button"
-        className="p-2 text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-95 transition duration-200 hover:text-black dark:hover:text-white"
+        className={cn(
+          "flex items-center justify-center gap-2 p-2 h-9 w-9 sm:w-auto sm:px-4",
+          "rounded-full transition-all duration-300 overflow-hidden",
+          "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+          "hover:shadow-md text-sm",
+          optimizationMode !== 'balanced'
+            ? "bg-gray-100 dark:bg-[#f5f5f5] text-gray-700 dark:text-[#313335]"
+            : "bg-white dark:bg-[#313335] text-[#313335] dark:text-white",
+        )}
       >
-        <div className="flex flex-row items-center space-x-1">
-          {
-            OptimizationModes.find((mode) => mode.key === optimizationMode)
-              ?.icon
-          }
-          <p className="text-xs font-medium">
-            {
-              OptimizationModes.find((mode) => mode.key === optimizationMode)
-                ?.title
-            }
-          </p>
-          <ChevronDown size={20} />
-        </div>
+        {OptimizationModes.find((mode) => mode.key === optimizationMode)?.icon}
+        <span className="hidden sm:block text-xs font-medium">
+          {OptimizationModes.find((mode) => mode.key === optimizationMode)?.title}
+        </span>
       </PopoverButton>
       <Transition
         as={Fragment}

@@ -5,7 +5,7 @@ import {
   PopoverPanel,
   Transition,
 } from '@headlessui/react';
-import { CopyPlus, File, LoaderCircle, Plus, Trash } from 'lucide-react';
+import { Paperclip, File, LoaderCircle, Plus, Trash } from 'lucide-react';
 import { Fragment, useRef, useState } from 'react';
 import { File as FileType } from '../ChatWindow';
 
@@ -54,25 +54,33 @@ const Attach = ({
   };
 
   return loading ? (
-    <div className="flex flex-row items-center justify-between space-x-1">
-      <LoaderCircle size={18} className="text-sky-400 animate-spin" />
-      <p className="text-sky-400 inline whitespace-nowrap text-xs font-medium">
+    <div className={cn(
+      "flex items-center justify-center gap-2 p-2 h-9 w-9 sm:w-auto sm:px-4",
+      "rounded-full transition-all duration-300 overflow-hidden",
+      "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+      "bg-white dark:bg-[#313335] text-[#313335] dark:text-white",
+    )}>
+      <LoaderCircle className="h-5 w-5 text-sky-400 animate-spin" />
+      <span className="hidden sm:inline text-sky-400 text-xs font-medium whitespace-nowrap">
         Uploading..
-      </p>
+      </span>
     </div>
   ) : files.length > 0 ? (
     <Popover className="relative w-full max-w-[15rem] md:max-w-md lg:max-w-lg">
       <PopoverButton
         type="button"
         className={cn(
-          'flex flex-row items-center justify-between space-x-1 p-2 text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary active:scale-95 transition duration-200 hover:text-black dark:hover:text-white',
-          files.length > 0 ? '-ml-2 lg:-ml-3' : '',
+          "flex items-center justify-center gap-2 p-2 h-9 w-9 sm:w-auto sm:px-4",
+          "rounded-full transition-all duration-300 overflow-hidden",
+          "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+          "hover:shadow-md text-sm",
+          "bg-gray-100 dark:bg-[#f5f5f5] text-gray-700 dark:text-[#313335]",
         )}
       >
         {files.length > 1 && (
           <>
-            <File size={19} className="text-sky-400" />
-            <p className="text-sky-400 inline whitespace-nowrap text-xs font-medium">
+            <File size={20} className="text-sky-400" />
+            <p className="hidden sm:inline text-sky-400 whitespace-nowrap text-xs font-medium">
               {files.length} files
             </p>
           </>
@@ -80,8 +88,8 @@ const Attach = ({
 
         {files.length === 1 && (
           <>
-            <File size={18} className="text-sky-400" />
-            <p className="text-sky-400 text-xs font-medium">
+            <File size={20} className="text-sky-400" />
+            <p className="hidden sm:inline text-sky-400 text-xs font-medium">
               {files[0].fileName.length > 10
                 ? files[0].fileName.replace(/\.\w+$/, '').substring(0, 3) +
                   '...' +
@@ -163,10 +171,13 @@ const Attach = ({
     <button
       type="button"
       onClick={() => fileInputRef.current.click()}
-      className={cn(
-        'flex flex-row items-center space-x-1 text-black/50 dark:text-white/50 rounded-xl hover:bg-light-secondary dark:hover:bg-dark-secondary transition duration-200 hover:text-black dark:hover:text-white',
-        showText ? '' : 'p-2',
-      )}
+        className={cn(
+          "flex items-center justify-center gap-2 p-2 h-9 w-9 sm:w-auto sm:px-4",
+          "rounded-full transition-all duration-300 overflow-hidden",
+          "border border-neutral-300 dark:border-white/20 border-[0.1px]",
+          "hover:shadow-md text-sm",
+          "bg-white dark:bg-[#313335] text-[#313335] dark:text-white",
+        )}
     >
       <input
         type="file"
@@ -176,8 +187,7 @@ const Attach = ({
         multiple
         hidden
       />
-      <CopyPlus size={showText ? 18 : undefined} />
-      {showText && <p className="text-xs font-medium pl-[1px]">Attach</p>}
+      <Paperclip className="h-5 w-5" />
     </button>
   );
 };

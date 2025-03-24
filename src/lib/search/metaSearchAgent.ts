@@ -18,6 +18,7 @@ import LineOutputParser from '../outputParsers/lineOutputParser';
 import { getDocumentsFromLinks } from '../utils/documents';
 import { Document } from 'langchain/document';
 import { searchSearxng } from '../searxng';
+import { searchTavily } from '../tavily';
 import path from 'node:path';
 import fs from 'node:fs';
 import computeSimilarity from '../utils/computeSimilarity';
@@ -44,6 +45,7 @@ interface Config {
   queryGeneratorPrompt: string;
   responsePrompt: string;
   activeEngines: string[];
+  searchEngine?: 'searxng' | 'tavily' | 'both';
 }
 
 type BasicChainInput = {
@@ -203,27 +205,57 @@ class MetaSearchAgent implements MetaSearchAgentType {
           return { query: question, docs: docs };
         } else {
           question = question.replace(/<think>.*?<\/think>/g, '');
-
-          const res = await searchSearxng(question, {
-            language: 'en',
-            engines: this.config.activeEngines,
-          });
-
-          const documents = res.results.map(
-            (result) =>
-              new Document({
-                pageContent:
-                  result.content ||
-                  (this.config.activeEngines.includes('youtube')
-                    ? result.title
-                    : '') /* Todo: Implement transcript grabbing using Youtubei (source: https://www.npmjs.com/package/youtubei) */,
-                metadata: {
-                  title: result.title,
-                  url: result.url,
-                  ...(result.img_src && { img_src: result.img_src }),
-                },
-              }),
-          );
+          
+          let documents: Document[] = [];
+          
+          // Default to searxng if not specified
+          const searchEngine = this.config.searchEngine || 'searxng';
+          
+          if (searchEngine === 'searxng' || searchEngine === 'both') {
+            const searxRes = await searchSearxng(question, {
+              language: 'en',
+              engines: this.config.activeEngines,
+            });
+            
+            documents = [...documents, ...searxRes.results.map(
+              (result) =>
+                new Document({
+                  pageContent:
+                    result.content ||
+                    (this.config.activeEngines.includes('youtube')
+                      ? result.title
+                      : '') /* Todo: Implement transcript grabbing using Youtubei (source: https://www.npmjs.com/package/youtubei) */,
+                  metadata: {
+                    title: result.title,
+                    url: result.url,
+                    source: 'searxng',
+                    ...(result.img_src && { img_src: result.img_src }),
+                  },
+                }),
+            )];
+          }
+          
+          if (searchEngine === 'tavily' || searchEngine === 'both') {
+            try {
+              const tavilyRes = await searchTavily(question);
+              // Let the searchTavily function handle the dynamic determination of maxResults and searchDepth
+              
+              documents = [...documents, ...tavilyRes.results.map(
+                (result) =>
+                  new Document({
+                    pageContent: result.content || '',
+                    metadata: {
+                      title: result.title,
+                      url: result.url,
+                      source: 'tavily',
+                    },
+                  }),
+              )];
+            } catch (err) {
+              console.error('Tavily search failed:', err);
+              // Continue with available results if any
+            }
+          }
 
           return { query: question, docs: documents };
         }

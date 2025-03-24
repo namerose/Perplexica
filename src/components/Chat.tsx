@@ -16,6 +16,7 @@ const Chat = ({
   setFileIds,
   files,
   setFiles,
+  focusMode,
 }: {
   messages: Message[];
   sendMessage: (message: string) => void;
@@ -26,6 +27,7 @@ const Chat = ({
   setFileIds: (fileIds: string[]) => void;
   files: File[];
   setFiles: (files: File[]) => void;
+  focusMode: string;
 }) => {
   const [dividerWidth, setDividerWidth] = useState(0);
   const dividerRef = useRef<HTMLDivElement | null>(null);
@@ -78,6 +80,7 @@ const Chat = ({
               isLast={isLast}
               rewrite={rewrite}
               sendMessage={sendMessage}
+              focusMode={focusMode}
             />
             {!isLast && msg.role === 'assistant' && (
               <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />

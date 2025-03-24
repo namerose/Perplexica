@@ -83,17 +83,16 @@ const EmptyChatMessageInput = ({
           placeholder="Ask anything..."
         />
         <div className="flex flex-row items-center justify-between mt-4">
-          <div className="flex flex-row items-center space-x-2 lg:space-x-4">
+          <div className="flex flex-row items-center gap-1">
             <Focus focusMode={focusMode} setFocusMode={setFocusMode} />
             <Attach
               fileIds={fileIds}
               setFileIds={setFileIds}
               files={files}
               setFiles={setFiles}
-              showText
             />
           </div>
-          <div className="flex flex-row items-center space-x-1 sm:space-x-4">
+          <div className="flex flex-row items-center gap-2 lg:gap-3">
             <Optimization
               optimizationMode={optimizationMode}
               setOptimizationMode={setOptimizationMode}

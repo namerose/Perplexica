@@ -7,7 +7,7 @@ import Chat from './Chat';
 import EmptyChat from './EmptyChat';
 import crypto from 'crypto';
 import { toast } from 'sonner';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { getSuggestions } from '@/lib/actions';
 import { Settings } from 'lucide-react';
 import Link from 'next/link';
@@ -239,6 +239,7 @@ const loadMessages = async (
 
 const ChatWindow = ({ id }: { id?: string }) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialMessage = searchParams.get('q');
 
   const [chatId, setChatId] = useState<string | undefined>(id);
@@ -305,9 +306,11 @@ const ChatWindow = ({ id }: { id?: string }) => {
         setFileIds,
       );
     } else if (!chatId) {
+      // Generate a new chat ID but don't navigate yet
+      const newChatId = crypto.randomBytes(20).toString('hex');
       setNewChatCreated(true);
       setIsMessagesLoaded(true);
-      setChatId(crypto.randomBytes(20).toString('hex'));
+      setChatId(newChatId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -332,6 +335,17 @@ const ChatWindow = ({ id }: { id?: string }) => {
     if (!isConfigReady) {
       toast.error('Cannot send message before the configuration is ready');
       return;
+    }
+
+    // Update URL with chatId if this is the first message and we're not already on a chat page
+    // Use history.replaceState to avoid full navigation which can disrupt the component state
+    if (messages.length === 0 && window.location.pathname === '/') {
+      const params = new URLSearchParams(window.location.search);
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const newUrl = `/c/${chatId}${queryString}`;
+      
+      // Use history.replaceState to update URL without navigation
+      window.history.replaceState({}, '', newUrl);
     }
 
     setLoading(true);
@@ -569,6 +583,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
               setFileIds={setFileIds}
               files={files}
               setFiles={setFiles}
+              focusMode={focusMode}
             />
           </>
         ) : (
