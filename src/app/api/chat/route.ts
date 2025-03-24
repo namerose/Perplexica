@@ -60,70 +60,120 @@ const handleEmitterEvents = async (
 ) => {
   let recievedMessage = '';
   let sources: any[] = [];
+  let writerClosed = false;
 
-  stream.on('data', (data) => {
-    const parsedData = JSON.parse(data);
-    if (parsedData.type === 'response') {
-      writer.write(
-        encoder.encode(
-          JSON.stringify({
-            type: 'message',
-            data: parsedData.data,
-            messageId: aiMessageId,
-          }) + '\n',
-        ),
-      );
+  // Safe write function that checks if writer is closed before writing
+  const safeWrite = async (data: any) => {
+    if (writerClosed) return;
+    
+    try {
+      await writer.write(data);
+    } catch (err) {
+      console.error('Writer error:', err);
+    }
+  };
 
-      recievedMessage += parsedData.data;
-    } else if (parsedData.type === 'sources') {
-      writer.write(
-        encoder.encode(
-          JSON.stringify({
-            type: 'sources',
-            data: parsedData.data,
-            messageId: aiMessageId,
-          }) + '\n',
-        ),
-      );
+  // Safe close function that ensures writer is only closed once
+  const safeClose = async () => {
+    if (writerClosed) return;
+    
+    try {
+      writerClosed = true;
+      await writer.close();
+    } catch (err) {
+      console.error('Error closing writer:', err);
+    }
+  };
 
-      sources = parsedData.data;
+  stream.on('data', async (data) => {
+    try {
+      const parsedData = JSON.parse(data);
+      if (parsedData.type === 'response') {
+        await safeWrite(
+          encoder.encode(
+            JSON.stringify({
+              type: 'message',
+              data: parsedData.data,
+              messageId: aiMessageId,
+            }) + '\n',
+          )
+        );
+
+        recievedMessage += parsedData.data;
+      } else if (parsedData.type === 'sources') {
+        await safeWrite(
+          encoder.encode(
+            JSON.stringify({
+              type: 'sources',
+              data: parsedData.data,
+              messageId: aiMessageId,
+            }) + '\n',
+          )
+        );
+
+        sources = parsedData.data;
+      }
+    } catch (err) {
+      console.error('Error handling data event:', err);
     }
   });
-  stream.on('end', () => {
-    writer.write(
-      encoder.encode(
-        JSON.stringify({
-          type: 'messageEnd',
-          messageId: aiMessageId,
-        }) + '\n',
-      ),
-    );
-    writer.close();
 
-    db.insert(messagesSchema)
-      .values({
-        content: recievedMessage,
-        chatId: chatId,
-        messageId: aiMessageId,
-        role: 'assistant',
-        metadata: JSON.stringify({
-          createdAt: new Date(),
-          ...(sources && sources.length > 0 && { sources }),
-        }),
-      })
-      .execute();
+  stream.on('end', async () => {
+    try {
+      // Only write messageEnd and close if not already closed
+      if (!writerClosed) {
+        await safeWrite(
+          encoder.encode(
+            JSON.stringify({
+              type: 'messageEnd',
+              messageId: aiMessageId,
+            }) + '\n',
+          )
+        );
+        
+        await safeClose();
+      }
+
+      // Database operations should still proceed even if writer is closed
+      await db.insert(messagesSchema)
+        .values({
+          content: recievedMessage,
+          chatId: chatId,
+          messageId: aiMessageId,
+          role: 'assistant',
+          metadata: JSON.stringify({
+            createdAt: new Date(),
+            ...(sources && sources.length > 0 && { sources }),
+          }),
+        })
+        .execute();
+    } catch (err) {
+      console.error('Error handling end event:', err);
+    }
   });
-  stream.on('error', (data) => {
-    const parsedData = JSON.parse(data);
-    writer.write(
-      encoder.encode(
-        JSON.stringify({
-          type: 'error',
-          data: parsedData.data,
-        }),
-      ),
-    );
-    writer.close();
+
+  stream.on('error', async (data) => {
+    try {
+      let errorData;
+      try {
+        errorData = JSON.parse(data);
+      } catch {
+        errorData = { data: 'Unknown error occurred' };
+      }
+      
+      await safeWrite(
+        encoder.encode(
+          JSON.stringify({
+            type: 'error',
+            data: errorData.data || 'Error with no details',
+          }),
+        )
+      );
+      
+      await safeClose();
+    } catch (err) {
+      console.error('Error handling error event:', err);
+    }
   });
 };
 
